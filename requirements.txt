@@ -1,5 +1,5 @@
 openai_whisper==20230308
-protobuf==3.12
+protobuf==3.20.1
 PyAudio==0.2.13
 six==1.16.0
 SpeechRecognition==3.9.0
