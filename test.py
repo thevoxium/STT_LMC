@@ -1,15 +1,19 @@
 from __future__ import division
+from google.oauth2 import service_account
 import streamlit as st
 import re
 import sys
 from google.cloud import speech
 import pyaudio
 from six.moves import queue
-
-
-
 import os
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "/home/anshul/keen-honor-287510-5084f26416a6.json"
+
+
+#os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "/home/anshul/keen-honor-287510-5084f26416a6.json"
+
+credentials = service_account.Credentials.from_service_account_info(
+    st.secrets["gcp_service_account"]
+)
 
 st.title("Speech-to-Text with Google's STT API")
 
@@ -84,7 +88,7 @@ def listen_print_loop(responses):
 
 def main():
     language_code = "hi-IN"  
-    client = speech.SpeechClient()
+    client = speech.SpeechClient(credentials=credentials)
     config = speech.RecognitionConfig(
         encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
         sample_rate_hertz=RATE,
