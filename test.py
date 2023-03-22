@@ -91,10 +91,8 @@ def listen_print_loop(responses):
             if isinstance(req_text, binary_type):
                 req_text = req_text.decode("utf-8")
             
-            result = translate_client.translate(req_text)
-
-            st.write("translated text: ")
-            st.write(result["translatedText"])
+            result = translate_client.translate(req_text)["translatedText"]
+            st.markdown('<div style="color:#23AB35">{}</div>'.format(result), unsafe_allow_html=True)
 
             if re.search(r"\b(exit|quit)\b", transcript, re.I):
                 st.write("Exiting..")
