@@ -6,10 +6,9 @@ import sys
 from google.cloud import speech
 import pyaudio
 from six.moves import queue
+from six import binary_type
 import os
-
-
-#os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "/home/anshul/keen-honor-287510-5084f26416a6.json"
+from google.cloud import translate_v2 as translate
 
 credentials = service_account.Credentials.from_service_account_info(
     st.secrets["gcp_service_account"]
@@ -17,12 +16,14 @@ credentials = service_account.Credentials.from_service_account_info(
 
 st.title("Speech-to-Text with Google's STT API")
 
-# Constants
+
 RATE = 16000
 CHUNK = int(RATE / 10)
 language_code = "hi-IN"
 
-# Functions
+
+translate_client = translate.Client(credentials=credentials)
+
 class MicrophoneStream(object):
     def __init__(self, rate, chunk):
         self._rate = rate
@@ -68,6 +69,9 @@ class MicrophoneStream(object):
 
 def listen_print_loop(responses):
     num_chars_printed = 0
+
+    placeholder = st.empty()
+
     for response in responses:
         if not response.results:
             continue
@@ -77,10 +81,21 @@ def listen_print_loop(responses):
         transcript = result.alternatives[0].transcript
         overwrite_chars = " " * (num_chars_printed - len(transcript))
         if not result.is_final:
-            #st.write(transcript + overwrite_chars)
+            placeholder.text(transcript+overwrite_chars)
             num_chars_printed = len(transcript)
         else:
+            placeholder.empty()
             st.write(transcript + overwrite_chars)
+            req_text = transcript + overwrite_chars
+
+            if isinstance(req_text, binary_type):
+                req_text = req_text.decode("utf-8")
+            
+            result = translate_client.translate(req_text)
+
+            st.write("translated text: ")
+            st.write(result["translatedText"])
+
             if re.search(r"\b(exit|quit)\b", transcript, re.I):
                 st.write("Exiting..")
                 break
@@ -97,6 +112,8 @@ def main():
     streaming_config = speech.StreamingRecognitionConfig(
         config=config, interim_results=True, single_utterance = False
     )
+
+
     is_recording = False
     st.text("Click 'Start Recording'")
     start_button = st.button("Start Recording")
