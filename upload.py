@@ -34,7 +34,7 @@ def main():
         language_code=language_code,
     )
 
-    uploaded_file = st.file_uploader("Choose an audio file (.mp3)", type=["flac"])
+    uploaded_file = st.file_uploader("Choose an audio file (.flac)", type=["flac"])
     if uploaded_file is not None:
 
         with NamedTemporaryFile(suffix="mp3") as temp:
