@@ -36,7 +36,12 @@ auth_provider_x509_cert_url = "https://www.googleapis.com/oauth2/v1/certs"
 client_x509_cert_url = "xxx"
 ```
 
-Run the streamlit file using:
+If you want to get real-time streaming audio transcription and translation then run the streamlit server using:
 ```python 
-streamlit run test.py
+streamlit run realtime.py
+```
+
+If you want to upload the audio file and then get the transcription and translation then run the streamlit server using:
+```python
+streamlit run upload.py
 ```
