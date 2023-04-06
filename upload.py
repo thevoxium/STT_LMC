@@ -19,7 +19,7 @@ credentials = service_account.Credentials.from_service_account_info(
 st.title("Last Mile Care")
 
 
-RATE = 44100
+RATE = 48000
 language_code = "hi-IN"
 
 
