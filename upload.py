@@ -31,7 +31,6 @@ def main():
     client = speech.SpeechClient(credentials=credentials)
     config = speech.RecognitionConfig(
         encoding=speech.RecognitionConfig.AudioEncoding.FLAC,
-        sample_rate_hertz=RATE,
         language_code=language_code,
     )
 
