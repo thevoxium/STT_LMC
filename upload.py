@@ -18,10 +18,20 @@ credentials = service_account.Credentials.from_service_account_info(
 
 st.title("Last Mile Care")
 
+option = st.selectbox(
+    'Select your device microphone input type',
+    ('Laptop (Single Mic)', 'Laptop (Dual Mic)', 'Mobile (Single Mic)', 'Mobile (Dual Mic)'))
+
 
 RATE = 48000
 language_code = "hi-IN"
 
+audio_channel_count = 1
+
+if (option == 'Laptop (Single Mic)' or option == 'Mobile (Single Mic)'):
+    audio_channel_count = 1
+else:
+    audio_channel_count = 2
 
 translate_client = translate.Client(credentials=credentials)
 
@@ -32,6 +42,7 @@ def main():
     config = speech.RecognitionConfig(
         encoding=speech.RecognitionConfig.AudioEncoding.FLAC,
         language_code=language_code,
+        audio_channel_count = audio_channel_count
     )
 
     uploaded_file = st.file_uploader("Choose an audio file (.mp3)", type=["mp3"])
