@@ -11,6 +11,7 @@ import os
 from pydub import AudioSegment
 from google.cloud import translate_v2 as translate
 from tempfile import NamedTemporaryFile
+import mysql.connector
 
 credentials = service_account.Credentials.from_service_account_info(
     st.secrets["gcp_service_account"]
@@ -34,6 +35,34 @@ else:
     audio_channel_count = 2
 
 translate_client = translate.Client(credentials=credentials)
+
+
+def connect_to_database():
+    return mysql.connector.connect(
+        host=st.secrets["mysql_host"],
+        user=st.secrets["mysql_user"],
+        password=st.secrets["mysql_password"],
+        database="lastmilecare",
+    )
+
+def insert_transcription(transcript, translated_text, feedback):
+    connection = connect_to_database()
+    cursor = connection.cursor()
+    
+    query = """
+        INSERT INTO results (transcript, translated_text, feedback)
+        VALUES (%s, %s, %s)
+    """
+    
+    cursor.execute(query, (transcript, translated_text, feedback))
+    connection.commit()
+    
+    transcription_id = cursor.lastrowid
+    
+    cursor.close()
+    connection.close()
+    
+    return transcription_id
 
 
 def main():
@@ -69,6 +98,13 @@ def main():
 
                 result_translated = translate_client.translate(transcript)["translatedText"]
                 st.write(result_translated)
+
+                feedback = st.slider("Feedback", min_value = 0, max_value = 100, step = 1)
+
+                database_update_btn = st.button("Upload Results to Database")
+                if (database_update_btn):
+                    transcription_id = insert_transcription(transcript, result_translated, feedback)
+                    st.write(f"Inserted transcription with ID: {transcription_id}")
 
 
 if __name__ == "__main__":
