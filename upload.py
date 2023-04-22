@@ -74,10 +74,12 @@ def main():
         audio_channel_count = audio_channel_count
     )
 
-    uploaded_file = st.file_uploader("Choose an audio file (.mp3)", type=["mp3"])
+    uploaded_file = st.file_uploader("Choose an audio file (.mp3, .ogg)", type=["mp3", "ogg"])
+
     if uploaded_file is not None:
+        file_format = uploaded_file.type.split("/")[-1]
         with NamedTemporaryFile(suffix=".flac") as temp:
-            mp3_audio = AudioSegment.from_file(io.BytesIO(uploaded_file.read()), format="mp3")
+            mp3_audio = AudioSegment.from_file(io.BytesIO(uploaded_file.read()), format=file_format)
             mp3_audio.export(temp.name, format="flac")
 
             
