@@ -9,6 +9,7 @@ from six.moves import queue
 from six import binary_type
 import os
 from google.cloud import translate_v2 as translate
+import mysql.connector
 
 credentials = service_account.Credentials.from_service_account_info(
     st.secrets["gcp_service_account"]
@@ -23,6 +24,34 @@ language_code = "hi-IN"
 
 
 translate_client = translate.Client(credentials=credentials)
+
+
+def connect_to_database():
+    return mysql.connector.connect(
+        host=st.secrets["mysql_host"],
+        user=st.secrets["mysql_user"],
+        password=st.secrets["mysql_password"],
+        database="lastmilecare",
+    )
+
+def insert_transcription(transcript, translated_text, feedback=90):
+    connection = connect_to_database()
+    cursor = connection.cursor()
+    
+    query = """
+        INSERT INTO results (transcript, translated_text, feedback)
+        VALUES (%s, %s, %s)
+    """
+    
+    cursor.execute(query, (transcript, translated_text, feedback))
+    connection.commit()
+    
+    transcription_id = cursor.lastrowid
+    
+    cursor.close()
+    connection.close()
+    
+    return transcription_id
 
 class MicrophoneStream(object):
     def __init__(self, rate, chunk):
@@ -93,6 +122,9 @@ def listen_print_loop(responses):
             
             result = translate_client.translate(req_text)["translatedText"]
             st.markdown('<div style="color:#23AB35">{}</div>'.format(result), unsafe_allow_html=True)
+            
+            transcription_id = insert_transcription(transcript+overwrite_chars, result, 92)
+            st.write(f"Inserted transcription with ID: {transcription_id}")
 
             if re.search(r"\b(exit|quit)\b", transcript, re.I):
                 st.write("Exiting..")

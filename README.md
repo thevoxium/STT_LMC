@@ -23,6 +23,12 @@ Content of `secrets.toml` need to be like shown below:
 
 ```yml
 # .streamlit/secrets.toml
+
+mysql_host = ""
+mysql_user = ""
+mysql_password = ""
+mysql_database = ""
+
 [gcp_service_account]
 type = "service_account"
 project_id = "xxx"
