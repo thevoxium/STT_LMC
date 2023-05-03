@@ -31,30 +31,25 @@ def main():
     st.title("Upload Data")
     data_type = st.selectbox("Select data type:", ("Question & Answer", "Blog", "Forum"))
 
-    title_text = ""
-
-    if data_type == "Question & Answer":
-        title_text = "Enter the Question & Answer"
-    elif data_type == "Blog":
-        title_text = "Enter the Blog Title and Content"
-    else:
-        title_text = "Enter the Forum Post Content"
+    num_fields = st.number_input("Enter the number of entries to add:", min_value=1, value=1, step=1)
+    titles = []
+    contents = []
     
-    title = st.text_input(title_text)
-    content = st.text_area("Enter the content:")
 
-    uploaded_file = st.file_uploader("Or choose a file to upload:")
-    if uploaded_file is not None:
-        content = uploaded_file.read().decode()
+    for i in range(int(num_fields)):
+        with st.container():
+            st.write(f"Entry {i + 1}")
+            titles.append(st.text_input(f"Enter title {i + 1}:"))
+            contents.append(st.text_area(f"Enter content {i + 1}:"))
+            
+
 
     if st.button("Submit"):
-        if title and content:
-            connection = connect_to_db()
-            insert_data(connection, data_type, title, content)
-            st.success("Data uploaded successfully!")
-            connection.close()
-        else:
-            st.error("Please provide both title and content.")
-
+        connection = connect_to_db()
+        for title, content in zip(titles, contents):
+            if title and content:
+                insert_data(connection, data_type, title, content)
+        st.success("Data uploaded successfully!")
+        connection.close()
 if __name__ == "__main__":
     main()

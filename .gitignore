@@ -1,3 +1,5 @@
 .streamlit/secrets.toml
 .streamlit/config.toml
 llm.py
+Dockerfile
+realtime_lmc.tar
