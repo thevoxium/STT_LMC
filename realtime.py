@@ -10,6 +10,8 @@ from six import binary_type
 import os
 from google.cloud import translate_v2 as translate
 import mysql.connector
+from transformers import T5ForConditionalGeneration, T5Tokenizer
+
 
 credentials = service_account.Credentials.from_service_account_info(
     st.secrets["gcp_service_account"]
@@ -17,6 +19,8 @@ credentials = service_account.Credentials.from_service_account_info(
 
 st.title("Speech-to-Text with Google's STT API")
 
+tokenizer = T5Tokenizer.from_pretrained('t5-base')
+model = T5ForConditionalGeneration.from_pretrained('t5-base')
 
 RATE = 16000
 CHUNK = int(RATE / 10)
@@ -24,6 +28,13 @@ language_code = "hi-IN"
 
 
 translate_client = translate.Client(credentials=credentials)
+
+
+def answer_question(question):
+    inputs = tokenizer.encode("question: " + question, return_tensors="pt")
+    outputs = model.generate(inputs, max_length=200, num_return_sequences=1)
+    answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    return answer
 
 
 def connect_to_database():
@@ -121,8 +132,11 @@ def listen_print_loop(responses):
                 req_text = req_text.decode("utf-8")
             
             result = translate_client.translate(req_text)["translatedText"]
-            st.markdown('<div style="color:#23AB35">{}</div>'.format(result), unsafe_allow_html=True)
+            #st.markdown('<div style="color:#23AB35">{}</div>'.format(result), unsafe_allow_html=True)
             
+            answer = answer_question(result)
+            st.write(f"Answer: {answer}")
+
             transcription_id = insert_transcription(transcript+overwrite_chars, result, 92)
             st.write(f"Inserted transcription with ID: {transcription_id}")
 
